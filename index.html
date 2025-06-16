@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>밥 주세요!</title>
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    background: black;
+    color: #0f0;
+    font-family: monospace, monospace;
+    width: 100vw; height: 100vh;
+    overflow-x: hidden;
+    overflow-y: visible;
+    position: relative;
+  }
+  #container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+  }
+  #title {
+    position: absolute;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #0f0;
+    font-size: 30pt;
+    font-weight: bold;
+    user-select: none;
+    pointer-events: none;
+    z-index: 150;
+    white-space: nowrap;
+  }
+  #asciiArtCenter {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: pre;
+    color: #0f0;
+    font-size: 1.5vw;
+    line-height: 1.1;
+    user-select: none;
+    pointer-events: none;
+    max-width: 30vw;
+    max-height: 30vw;
+    z-index: 100;
+  }
+  .point {
+    position: absolute;
+    width: 12vw;
+    height: 12vw;
+    border: 1px solid #0f0;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 1.8vw;
+    white-space: nowrap;
+    text-align: center;
+    user-select: none;
+    color: #0f0;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    padding: 0.3rem;
+    overflow-wrap: break-word;
+    z-index: 120;
+  }
+  .point.red {
+    color: red !important;
+  }
+  #phonemeContainer {
+    position: fixed;
+    bottom: 4rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80vw;
+    max-width: 600px;
+    height: auto;
+    overflow-x: hidden;
+    overflow-y: visible;
+    white-space: normal;
+    line-height: 1.2;
+    z-index: 200;
+    user-select: none;
+    font-size: 3vw;
+    color: red;
+    font-weight: bold;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-height: 12rem;
+  }
+  #phonemeContainer span.phoneme {
+    display: inline-block;
+    margin: 0 0.25vw 0.15rem 0.25vw;
+    position: relative;
+    top: 0;
+    animation-fill-mode: forwards;
+  }
+  #phonemeContainer span.bounce {
+    animation-name: bounceDrop;
+    animation-duration: 1.5s;
+    animation-timing-function: cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  }
+  @keyframes bounceDrop {
+    0%   { top: -40vh; opacity: 1; }
+    60%  { top: 5px; opacity: 1; }
+    80%  { top: -10px; opacity: 1; }
+    100% { top: 0; opacity: 1; }
+  }
+  #inputWrapper {
+    position: fixed;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80vw;
+    max-width: 600px;
+    z-index: 110;
+  }
+  #wordInput {
+    width: 100%;
+    font-size: 3vw;
+    padding: 0.5em 1em;
+    background: black;
+    border: 1px solid #0f0;
+    color: #0f0;
+    border-radius: 5px;
+    outline: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- 🎵 배경 음악: 처음 단어 입력 시부터 반복 재생 -->
+<audio id="bgm" loop hidden>
+  <source src="backgroundmusic.mp3" type="audio/mpeg" />
+</audio>
+
+<div id="container">
+  <div id="title">밥 주세요!</div>
+  <pre id="asciiArtCenter">
+         ㅣ ㅣ
+         _ㅣ  ㅣ---  _
+        /                 ＼
+       ㅣ                 ㅣ
+        ＼                ㅣ
+          ㅣ              ㅣ
+           /               /
+         ㅣ             /
+         /            /
+       ㅣ_       _/
+           ㅣ  ㅣ
+             ㅣ  ㅣ
+               ㅣ  ㅣ
+  </pre>
+</div>
+
+<div id="phonemeContainer"></div>
+
+<div id="inputWrapper">
+  <input type="text" id="wordInput" placeholder="단어 입력 후 Enter" autocomplete="off" />
+</div>
+
+<script>
+  const NUM_POINTS = 5;
+  const RADIUS = 24;
+  const container = document.getElementById('container');
+  const asciiArt = document.getElementById('asciiArtCenter');
+  const phonemeContainer = document.getElementById('phonemeContainer');
+  const wordInput = document.getElementById('wordInput');
+  const bgm = document.getElementById('bgm');
+  let hasPlayedMusic = false;
+
+  let data = Array(NUM_POINTS).fill(null);
+  let rotationsCount = {};
+  let phonemesStack = [];
+
+  function createPoints() {
+    document.querySelectorAll('.point').forEach(el => el.remove());
+    for(let i=0; i<NUM_POINTS; i++) {
+      const angle = (2 * Math.PI / NUM_POINTS) * i - Math.PI / 2;
+      const asciiRect = asciiArt.getBoundingClientRect();
+      const centerX = asciiRect.left + asciiRect.width/2;
+      const centerY = asciiRect.top + asciiRect.height/2;
+      const vw = window.innerWidth / 100;
+      const offsetX = centerX + RADIUS * vw * Math.cos(angle) - (12*vw)/2;
+      const offsetY = centerY + RADIUS * vw * Math.sin(angle) - (12*vw)/2;
+
+      const point = document.createElement('div');
+      point.classList.add('point');
+      point.style.left = offsetX + 'px';
+      point.style.top = offsetY + 'px';
+      point.dataset.index = i;
+      container.appendChild(point);
+    }
+  }
+
+  function renderPoints() {
+    const points = document.querySelectorAll('.point');
+    points.forEach((point, i) => {
+      const word = data[i];
+      if(word === null) {
+        point.textContent = '';
+        point.classList.remove('red');
+      } else {
+        const dropped = droppedWords.has(word);
+        if(dropped) {
+          point.classList.add('red');
+          point.textContent = word;
+        } else {
+          point.classList.remove('red');
+          point.textContent = word;
+        }
+      }
+    });
+  }
+
+  function splitHangul(word) {
+    const CHO = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+    const JUNG = ['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ'];
+    const JONG = ['','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+
+    let res = [];
+    for(const ch of word) {
+      const code = ch.charCodeAt(0);
+      if(code < 0xAC00 || code > 0xD7A3) {
+        res.push(ch);
+        continue;
+      }
+      const uniIndex = code - 0xAC00;
+      const choIdx = Math.floor(uniIndex / (21*28));
+      const jungIdx = Math.floor((uniIndex % (21*28)) / 28);
+      const jongIdx = uniIndex % 28;
+      res.push(CHO[choIdx], JUNG[jungIdx]);
+      if(JONG[jongIdx] !== '') res.push(JONG[jongIdx]);
+    }
+    return res;
+  }
+
+  let droppedWords = new Set();
+
+  function shuffleArray(arr) {
+    for(let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function addPhonemesToContainer(phonemes) {
+    alert("토할 것 같아!");
+    phonemes = shuffleArray(phonemes);
+    phonemesStack = phonemesStack.concat(phonemes);
+    renderPhonemes();
+  }
+
+  function renderPhonemes() {
+    phonemeContainer.innerHTML = '';
+    phonemesStack.forEach((ph, idx) => {
+      const span = document.createElement('span');
+      span.classList.add('phoneme', 'bounce');
+      span.textContent = ph;
+      phonemeContainer.appendChild(span);
+    });
+  }
+
+  function rotateAndInsert(word) {
+    if(!rotationsCount[word]) rotationsCount[word] = 0;
+    droppedWords.delete(word);
+
+    let newData = Array(NUM_POINTS).fill(null);
+    newData[0] = word;
+
+    for(let i=0; i<NUM_POINTS; i++) {
+      const currentWord = data[i];
+      if(currentWord !== null && currentWord !== word) {
+        const newIndex = (i + 1) % NUM_POINTS;
+        rotationsCount[currentWord] = (rotationsCount[currentWord] || 0) + 1;
+
+        if(rotationsCount[currentWord] >= NUM_POINTS) {
+          const phonemes = splitHangul(currentWord);
+          addPhonemesToContainer(phonemes);
+          droppedWords.add(currentWord);
+        } else {
+          if(newData[newIndex] === null) {
+            newData[newIndex] = currentWord;
+          } else {
+            let nextPos = (newIndex + 1) % NUM_POINTS;
+            while(newData[nextPos] !== null && nextPos !== i) {
+              nextPos = (nextPos + 1) % NUM_POINTS;
+            }
+            if(nextPos !== i) newData[nextPos] = currentWord;
+          }
+        }
+      }
+    }
+
+    data = newData;
+    renderPoints();
+  }
+
+  wordInput.addEventListener('keydown', e => {
+    if(e.key === 'Enter') {
+      e.preventDefault();
+      const word = wordInput.value.trim();
+      if(word.length > 0) {
+        if (!hasPlayedMusic) {
+          bgm.play().catch(e => console.log('음악 재생 실패:', e));
+          hasPlayedMusic = true;
+        }
+        rotateAndInsert(word);
+        wordInput.value = '';
+      }
+    }
+  });
+
+  createPoints();
+  renderPoints();
+  renderPhonemes();
+
+  window.addEventListener('resize', () => {
+    createPoints();
+    renderPoints();
+  });
+</script>
+</body>
+</html>
