@@ -1,145 +1,137 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>밥 주세요!</title>
-<style>
-  html, body {
-    margin: 0; padding: 0;
-    background: black;
-    color: #0f0;
-    font-family: monospace, monospace;
-    width: 100vw; height: 100vh;
-    overflow: hidden;
-    position: relative;
-  }
-
-  #container {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-  }
-
-  #title {
-    position: absolute;
-    top: 1rem;
-    left: 50%;
-    transform: translateX(-50%);
-    color: #0f0;
-    font-size: 30pt;
-    font-weight: bold;
-    user-select: none;
-    pointer-events: none;
-    z-index: 150;
-    white-space: nowrap;
-  }
-
-  #asciiArtCenter {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    white-space: pre;
-    color: #0f0;
-    font-size: 1.5vw;
-    line-height: 1.1;
-    user-select: none;
-    pointer-events: none;
-    max-width: 30vw;
-    max-height: 30vw;
-    z-index: 100;
-  }
-
-  .point {
-    position: absolute;
-    width: 12vw;
-    height: 12vw;
-    border: 1px solid #0f0;
-    box-sizing: border-box;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    font-size: 1.8vw;
-    white-space: nowrap;
-    text-align: center;
-    user-select: none;
-    color: #0f0;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 6px;
-    padding: 0.3rem;
-    overflow-wrap: break-word;
-    z-index: 120;
-  }
-
-  .point.red {
-    color: red !important;
-  }
-
-  #phonemeContainer {
-    position: fixed;
-    bottom: 2.8rem;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80vw;
-    max-width: 600px;
-    max-height: 6rem;
-    overflow: hidden;
-    white-space: normal;
-    line-height: 1.1;
-    z-index: 200;
-    user-select: none;
-    font-size: 2.5vw;
-    color: red;
-    font-weight: bold;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  #phonemeContainer span.phoneme {
-    display: inline-block;
-    margin: 0 0.25vw 0.15rem 0.25vw;
-    position: relative;
-    top: 0;
-    animation-fill-mode: forwards;
-  }
-
-  #phonemeContainer span.bounce {
-    animation-name: bounceDrop;
-    animation-duration: 1.5s;
-    animation-timing-function: cubic-bezier(0.68, -0.55, 0.27, 1.55);
-  }
-
-  @keyframes bounceDrop {
-    0%   { top: -40vh; opacity: 1; }
-    60%  { top: 5px; opacity: 1; }
-    80%  { top: -10px; opacity: 1; }
-    100% { top: 0; opacity: 1; }
-  }
-
-  #inputWrapper {
-    position: fixed;
-    bottom: 0.8rem;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80vw;
-    max-width: 600px;
-    z-index: 110;
-  }
-
-  #wordInput {
-    width: 100%;
-    font-size: 2.5vw;
-    padding: 0.4em 0.8em;
-    background: black;
-    border: 1px solid #0f0;
-    color: #0f0;
-    border-radius: 5px;
-    outline: none;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>밥 주세요!</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0;
+      background: black;
+      color: #0f0;
+      font-family: monospace, monospace;
+      width: 100vw; height: 100vh;
+      overflow-x: hidden;
+      overflow-y: visible;
+      position: relative;
+    }
+    #container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+    #title {
+      position: absolute;
+      top: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #0f0;
+      font-size: 30pt;
+      font-weight: bold;
+      user-select: none;
+      pointer-events: none;
+      z-index: 150;
+      white-space: nowrap;
+    }
+    #asciiArtCenter {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      white-space: pre;
+      color: #0f0;
+      font-size: 1.5vw;
+      line-height: 1.1;
+      user-select: none;
+      pointer-events: none;
+      max-width: 30vw;
+      max-height: 30vw;
+      z-index: 100;
+    }
+    .point {
+      position: absolute;
+      width: 12vw;
+      height: 12vw;
+      border: 1px solid #0f0;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      font-size: 1.8vw;
+      white-space: nowrap;
+      text-align: center;
+      user-select: none;
+      color: #0f0;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 6px;
+      padding: 0.3rem;
+      overflow-wrap: break-word;
+      z-index: 120;
+    }
+    .point.red {
+      color: red !important;
+    }
+    #phonemeContainer {
+      position: fixed;
+      bottom: 4rem;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80vw;
+      max-width: 600px;
+      height: auto;
+      overflow-x: hidden;
+      overflow-y: visible;
+      white-space: normal;
+      line-height: 1.2;
+      z-index: 200;
+      user-select: none;
+      font-size: 3vw;
+      color: red;
+      font-weight: bold;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-height: 12rem;
+    }
+    #phonemeContainer span.phoneme {
+      display: inline-block;
+      margin: 0 0.25vw 0.15rem 0.25vw;
+      position: relative;
+      top: 0;
+      animation-fill-mode: forwards;
+    }
+    #phonemeContainer span.bounce {
+      animation-name: bounceDrop;
+      animation-duration: 1.5s;
+      animation-timing-function: cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    }
+    @keyframes bounceDrop {
+      0%   { top: -40vh; opacity: 1; }
+      60%  { top: 5px; opacity: 1; }
+      80%  { top: -10px; opacity: 1; }
+      100% { top: 0; opacity: 1; }
+    }
+    #inputWrapper {
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80vw;
+      max-width: 600px;
+      z-index: 110;
+    }
+    #wordInput {
+      width: 100%;
+      font-size: clamp(16px, 3vw, 24px); /* 수정된 부분 */
+      padding: 0.5em 1em;
+      background: black;
+      border: 1px solid #0f0;
+      color: #0f0;
+      border-radius: 5px;
+      outline: none;
+    }
+  </style>
 </head>
 <body>
 
@@ -174,7 +166,7 @@
 
 <script>
   const NUM_POINTS = 5;
-  const RADIUS = 18; // 줄였음
+  const RADIUS = 24;
   const container = document.getElementById('container');
   const asciiArt = document.getElementById('asciiArtCenter');
   const phonemeContainer = document.getElementById('phonemeContainer');
@@ -266,7 +258,7 @@
 
   function renderPhonemes() {
     phonemeContainer.innerHTML = '';
-    phonemesStack.forEach(ph => {
+    phonemesStack.forEach((ph, idx) => {
       const span = document.createElement('span');
       span.classList.add('phoneme', 'bounce');
       span.textContent = ph;
